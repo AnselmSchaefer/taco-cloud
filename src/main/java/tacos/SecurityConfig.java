@@ -41,6 +41,7 @@ public class SecurityConfig {
 			.and()
 				.formLogin()
 					.loginPage("/login")
+					.defaultSuccessUrl("/design") 
 			// Make H2-Console non-secured; for debug purposes
 			.and()
 	        	.csrf()
