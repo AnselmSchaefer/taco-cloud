@@ -11,7 +11,7 @@
   <h1>Design Your Taco</h1>
   <img th:src="@{/images/TacoCloud.jpg}"/>
   
-  <form method="POST" th:object="${taco}">
+  <form th:method="POST" th:object="${taco}" th:action="@{/design}" id="tacoForm">
   	<div class="grid">
   	    
   		<div class="ingredient-group" id="wraps">
