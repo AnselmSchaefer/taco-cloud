@@ -2,6 +2,7 @@ package tacos;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,17 +36,35 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		return http
-				.authorizeRequests()
-				.antMatchers("/design", "/orders").hasRole("USER")
-				.anyRequest().permitAll()
-			.and()
-				.formLogin()
-					.loginPage("/login")
-					.defaultSuccessUrl("/design") 
+			// BASIC LOGIN (for everything except the REST API):
+			//	.authorizeRequests()
+			//	.antMatchers("/design", "/orders").hasRole("USER")
+			//	.anyRequest().permitAll()
+			//.and()
+			//	.formLogin()
+			//		.loginPage("/login")
+			//		.defaultSuccessUrl("/design") 
+			
+		    // OAUTH2 => only for REST API functionality
+			.authorizeRequests()
+		        .antMatchers(HttpMethod.OPTIONS).permitAll() // needed for Angular/CORS
+		        .antMatchers(HttpMethod.POST, "/api/tacos")
+		            .hasAuthority("SCOPE_writeTacos")
+		        .antMatchers(HttpMethod.DELETE, "/api//tacos")
+		            .hasAuthority("SCOPE_deleteTacos")
+		        .antMatchers("/api//ingredients", "/api//orders/**")
+		            .permitAll()
+		        .antMatchers("/**").access("permitAll")
+		    .and()
+		        .oauth2ResourceServer(oauth2 -> oauth2.jwt())
+
+		        .httpBasic()
+		          .realmName("Taco Cloud")
+
 			// Make H2-Console non-secured; for debug purposes
 			.and()
 	        	.csrf()
-	        		.ignoringAntMatchers("/h2-console/**")
+	        		.ignoringAntMatchers("/h2-console/**", "/api/**")
 	        // Allow pages to be loaded in frames from the same origin; needed for H2-Console
 	        .and()  
 	        .headers()
